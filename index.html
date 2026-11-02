@@ -28,13 +28,28 @@ canvas{display:block;max-width:100%;height:auto;border-radius:8px;box-shadow:0 5
 .reading{font-size:19px;line-height:1.8;min-height:65px;color:#57476b;overflow-wrap:anywhere}.word{border-radius:5px;padding:1px 2px}.word.active{background:#ffe38d;color:#2f2140;box-shadow:0 0 0 2px #ffe38d}
 .note{font-size:12px;line-height:1.5;color:#776b86;margin:10px 2px 0}.status{font-size:13px;color:#624a80;font-weight:700;margin-top:10px;min-height:20px}
 @media(min-width:700px){.reader-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:14px;align-items:start}.reader-grid .panel{margin:0}.book-stage{min-height:460px}}
+
+.story-shelf{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:16px}
+.story-card{appearance:none;border:2px solid #eee3f6;background:linear-gradient(160deg,#fff,#fbf4ff);border-radius:20px;padding:10px;text-align:left;color:var(--ink);cursor:pointer;box-shadow:0 8px 22px #39245b12;transition:transform .18s,border-color .18s,box-shadow .18s;min-width:0}
+.story-card:active{transform:scale(.98)}
+.story-card.selected{border-color:#a66bd0;box-shadow:0 0 0 3px #e8d6f7,0 12px 26px #39245b20}
+.cover-wrap{aspect-ratio:3/4;background:linear-gradient(145deg,#eadcf8,#fff0f7);border-radius:13px;overflow:hidden;display:grid;place-items:center;position:relative}
+.cover-wrap canvas{width:100%;height:100%;object-fit:contain;box-shadow:none;border-radius:0}
+.cover-placeholder{font-size:42px;text-align:center;padding:16px}
+.story-name{font-size:15px;font-weight:850;line-height:1.3;margin:10px 2px 4px}
+.story-hint{font-size:11px;color:#806a96;margin:0 2px 3px;font-weight:750;text-transform:uppercase;letter-spacing:.6px}
+.shelf-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:18px}
+.shelf-heading strong{font-size:17px}
+.shelf-heading span{font-size:12px;color:#806a96}
+@media(max-width:360px){.story-shelf{gap:9px}.story-card{padding:7px}.story-name{font-size:13px}}
+
 </style>
 </head>
 <body>
 <header><div class="mark">SBC Kids presents</div><h1>Sani's Book Club</h1><p>Read along. Listen. Learn. Imagine.</p></header>
 <main>
 <section class="panel">
- <div class="toolbar"><div><strong>Choose a story</strong><div class="note" style="margin:3px 0 0">Pick a Sani's Book Club story or open your own PDF.</div></div><select id="bookChoice" aria-label="Choose a story" style="background:#f5effa;color:#382650;max-width:100%"><option value="" selected disabled>-- Select a story --</option><option value="./mommys-hands.pdf.pdf">Mommy’s Hands</option><option value="./would-you-trade-your-dad-for-a-giraffe.pdf.pdf">Would You Trade Your Dad for a Giraffe?</option></select><label class="upload-label" for="pdfFile">＋ Open PDF</label><input id="pdfFile" type="file" accept="application/pdf">
+ <div class="toolbar"><div><strong>Pick your next adventure</strong><div class="note" style="margin:3px 0 0">Choose a book by its cover, or bring your own story.</div></div><label class="upload-label" for="pdfFile">＋ Open PDF</label><input id="pdfFile" type="file" accept="application/pdf"></div><div class="shelf-heading"><strong>📚 The Story Shelf</strong><span>Tap a cover to read</span></div><div class="story-shelf" id="storyShelf"><button class="story-card" type="button" data-book="./mommys-hands.pdf.pdf"><div class="cover-wrap" id="coverMommy"><div class="cover-placeholder">📖✨</div></div><div class="story-name">Mommy’s Hands</div><div class="story-hint">Tap to read</div></button><button class="story-card" type="button" data-book="./would-you-trade-your-dad-for-a-giraffe.pdf.pdf"><div class="cover-wrap" id="coverGiraffe"><div class="cover-placeholder">🦒📚</div></div><div class="story-name">Would You Trade Your Dad for a Giraffe?</div><div class="story-hint">Tap to read</div></button></div>
  </div>
 </section>
 <div class="reader-grid">
@@ -67,12 +82,13 @@ if('speechSynthesis'in window){loadVoices();speechSynthesis.onvoiceschanged=load
 async function openBook(source,title='Your book'){if(!source)return;stopSpeech();setStatus('Opening '+title+'…');try{pdf=await pdfjsLib.getDocument(source).promise;page=1;await renderPage();setStatus(title+' is ready. Press Play to hear the page.')}catch(err){setStatus('Could not open the book. Check the PDF file and try again.');console.error(err)}}
 $('pdfFile').addEventListener('change',async e=>{const f=e.target.files[0];if(f)await openBook({data:await f.arrayBuffer()})});
 // Load the selected story stored in this repository.
-const bookChoice=$('bookChoice');
 const bookTitles={
  './mommys-hands.pdf.pdf':'Mommy’s Hands',
  './would-you-trade-your-dad-for-a-giraffe.pdf.pdf':'Would You Trade Your Dad for a Giraffe?'
 };
-bookChoice.addEventListener('change',()=>openBook(bookChoice.value,bookTitles[bookChoice.value]||'Your book'));
+document.querySelectorAll('.story-card').forEach(card=>card.addEventListener('click',()=>{const src=card.dataset.book;document.querySelectorAll('.story-card').forEach(x=>x.classList.toggle('selected',x===card));openBook(src,bookTitles[src]||'Your book')}));
+async function loadCover(pdfUrl,targetId){try{const doc=await pdfjsLib.getDocument({url:pdfUrl}).promise;const p=await doc.getPage(1);const base=p.getViewport({scale:1});const scale=Math.min(420/base.width,560/base.height);const vp=p.getViewport({scale});const cv=document.createElement('canvas');const ctx=cv.getContext('2d');cv.width=vp.width;cv.height=vp.height;cv.style.width='100%';cv.style.height='100%';await p.render({canvasContext:ctx,viewport:vp}).promise;const target=$(targetId);target.innerHTML='';target.append(cv)}catch(e){console.warn('Cover preview could not load:',pdfUrl,e)}}
+loadCover('./mommys-hands.pdf.pdf','coverMommy');loadCover('./would-you-trade-your-dad-for-a-giraffe.pdf.pdf','coverGiraffe');
 // Wait for the reader to choose a story; do not auto-open the first book.
 async function renderPage(){if(!pdf)return;stopSpeech();const p=await pdf.getPage(page),vp=p.getViewport({scale:1.5}),canvas=document.createElement('canvas'),ctx=canvas.getContext('2d');canvas.width=vp.width;canvas.height=vp.height;canvas.style.width='100%';canvas.style.maxWidth='100%';$('stage').innerHTML='';$('stage').append(canvas);await p.render({canvasContext:ctx,viewport:vp}).promise;const tc=await p.getTextContent();const items=tc.items.map(x=>x.str).filter(x=>x.trim());const text=items.join(' ').replace(/\s+/g,' ').trim();words=text?text.split(/\s+/):[];wordIndex=0;showTranscript();$('pageLabel').textContent='Page '+page+' of '+pdf.numPages;$('percent').textContent=Math.round(page/pdf.numPages*100)+'%';$('progressFill').style.width=(page/pdf.numPages*100)+'%';$('prev').disabled=page<=1;$('next').disabled=page>=pdf.numPages;['play','pause','replay'].forEach(id=>$(id).disabled=!words.length);if(!words.length)setStatus('This page has no selectable text. It may be an image-only page.');}
 function showTranscript(){const box=$('transcript');box.innerHTML='';words.forEach((w,i)=>{const s=document.createElement('span');s.className='word'+(i===wordIndex?' active':'');s.textContent=w+' ';s.id='w'+i;box.append(s)})}
