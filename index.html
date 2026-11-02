@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#34215f">
+<title>Sani's Book Club — Read Along</title>
+<style>
+:root{--ink:#24183d;--purple:#6846a5;--pink:#f4a8cb;--cream:#fffaf3;--lav:#f1eafa}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#fff7fb,#f3efff);color:var(--ink);font-family:ui-rounded,"Trebuchet MS",system-ui,sans-serif;min-height:100vh}
+header{padding:22px 16px 16px;text-align:center;background:#34215f;color:white;border-radius:0 0 26px 26px}
+header .mark{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#f8cce0;font-weight:800}
+h1{font-size:clamp(25px,6vw,36px);margin:6px 0 4px}header p{margin:0;color:#eee4ff;font-size:14px}
+main{max-width:900px;margin:18px auto;padding:0 14px 34px}
+.panel{background:#fff;border:1px solid #eadff4;border-radius:22px;padding:16px;box-shadow:0 8px 28px #3d28600d;margin-bottom:14px}
+.toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+button,.upload-label,select{border:0;border-radius:14px;padding:12px 15px;font:inherit;font-weight:750;cursor:pointer}
+button.primary{background:var(--purple);color:white}button.soft,.upload-label{background:var(--lav);color:#493174}button:disabled{opacity:.4;cursor:not-allowed}
+button:focus-visible,select:focus-visible,.upload-label:focus-within{outline:3px solid var(--pink);outline-offset:2px}
+input[type=file]{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden}
+.book-stage{background:#f6f1fa;border-radius:18px;padding:12px;min-height:230px;display:grid;place-items:center}
+canvas{display:block;max-width:100%;height:auto;border-radius:8px;box-shadow:0 5px 20px #27154422;background:white}
+.empty{text-align:center;padding:35px 15px;color:#625477}.empty .emoji{font-size:42px}
+.page-meta{display:flex;justify-content:space-between;gap:10px;align-items:center;margin:12px 2px 0;color:#655879;font-size:13px;font-weight:700}
+.progress{height:8px;background:#eee7f4;border-radius:20px;overflow:hidden;margin-top:8px}.progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,#a779d4,#f19bc4);transition:width .2s}
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.controls button{flex:1;min-width:88px}
+.voice-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}.voice-row label{font-size:13px;font-weight:750;color:#665777}.voice-row select{background:#f5effa;color:#382650;max-width:100%}
+.reading{font-size:19px;line-height:1.8;min-height:65px;color:#57476b;overflow-wrap:anywhere}.word{border-radius:5px;padding:1px 2px}.word.active{background:#ffe38d;color:#2f2140;box-shadow:0 0 0 2px #ffe38d}
+.note{font-size:12px;line-height:1.5;color:#776b86;margin:10px 2px 0}.status{font-size:13px;color:#624a80;font-weight:700;margin-top:10px;min-height:20px}
+@media(min-width:700px){.reader-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:14px;align-items:start}.reader-grid .panel{margin:0}.book-stage{min-height:460px}}
+</style>
+</head>
+<body>
+<header><div class="mark">SBC Kids presents</div><h1>Sani's Book Club</h1><p>Read along. Listen. Learn. Imagine.</p></header>
+<main>
+<section class="panel">
+ <div class="toolbar"><div><strong>Choose a story</strong><div class="note" style="margin:3px 0 0">Open a PDF book from your device to begin.</div></div><label class="upload-label" for="pdfFile">＋ Open book PDF</label><input id="pdfFile" type="file" accept="application/pdf">
+ </div>
+</section>
+<div class="reader-grid">
+<section class="panel">
+ <div class="book-stage" id="stage"><div class="empty"><div class="emoji">📚✨</div><strong>Your next adventure starts here!</strong><p>Open a Sani's Book Club PDF to see its pages.</p></div></div>
+ <div class="page-meta"><span id="pageLabel">No book loaded</span><span id="percent">0%</span></div><div class="progress"><span id="progressFill"></span></div>
+ <div class="controls" style="margin-top:14px"><button class="soft" id="prev" disabled>← Back</button><button class="primary" id="next" disabled>Next →</button></div>
+</section>
+<section class="panel">
+ <div class="toolbar"><strong>Listen & follow the words</strong><span style="font-size:12px;color:#816c98">READ ALOUD</span></div>
+ <div class="controls" style="margin-top:14px"><button class="primary" id="play" disabled>▶ Play</button><button class="soft" id="pause" disabled>Ⅱ Pause</button><button class="soft" id="replay" disabled>↻ Replay</button></div>
+ <div class="voice-row"><label for="voice">Voice</label><select id="voice" aria-label="Narrator voice"><option>Loading voices…</option></select><label for="speed">Speed</label><select id="speed"><option value=".75">Slow</option><option value="1" selected>Normal</option><option value="1.15">A little faster</option></select></div>
+ <div class="note">This starter version uses the reading voices available on your device. It is not yet a generated AI narrator. Voice availability and word highlighting vary by browser; iPhone Safari may not report every word boundary.</div>
+ <div class="status" id="status" aria-live="polite">Waiting for a book.</div>
+ <div style="border-top:1px solid #eee5f4;margin:14px 0"></div>
+ <strong>Follow the story</strong><p class="reading" id="transcript">Your book's words will appear here when you open a PDF.</p>
+</section>
+</div>
+<p class="note" style="text-align:center">Your PDF is opened locally in this browser and is not uploaded to the website. Close or refresh the page to clear it.</p>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+const $=id=>document.getElementById(id);
+let pdf=null,page=1,words=[],utterance=null,wordIndex=0,voices=[];
+function setStatus(s){$('status').textContent=s}
+function stopSpeech(){if('speechSynthesis'in window) speechSynthesis.cancel();utterance=null}
+function loadVoices(){if(!('speechSynthesis'in window)){ $('voice').innerHTML='<option>Speech not supported</option>';return} voices=speechSynthesis.getVoices();$('voice').innerHTML='';voices.forEach((v,i)=>{let o=document.createElement('option');o.value=i;o.textContent=v.name+' ('+v.lang+')';$('voice').append(o)});if(!voices.length)$('voice').innerHTML='<option value="">Device voices unavailable</option>'}
+if('speechSynthesis'in window){loadVoices();speechSynthesis.onvoiceschanged=loadVoices}
+$('pdfFile').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;stopSpeech();setStatus('Opening your book…');try{pdf=await pdfjsLib.getDocument({data:await f.arrayBuffer()}).promise;page=1;await renderPage();setStatus('Book ready. Press Play to hear the page.')}catch(err){setStatus('Could not open that PDF. Try another copy.');console.error(err)}});
+async function renderPage(){if(!pdf)return;stopSpeech();const p=await pdf.getPage(page),vp=p.getViewport({scale:1.5}),canvas=document.createElement('canvas'),ctx=canvas.getContext('2d');canvas.width=vp.width;canvas.height=vp.height;canvas.style.width='100%';canvas.style.maxWidth='100%';$('stage').innerHTML='';$('stage').append(canvas);await p.render({canvasContext:ctx,viewport:vp}).promise;const tc=await p.getTextContent();const items=tc.items.map(x=>x.str).filter(x=>x.trim());const text=items.join(' ').replace(/\s+/g,' ').trim();words=text?text.split(/\s+/):[];wordIndex=0;showTranscript();$('pageLabel').textContent='Page '+page+' of '+pdf.numPages;$('percent').textContent=Math.round(page/pdf.numPages*100)+'%';$('progressFill').style.width=(page/pdf.numPages*100)+'%';$('prev').disabled=page<=1;$('next').disabled=page>=pdf.numPages;['play','pause','replay'].forEach(id=>$(id).disabled=!words.length);if(!words.length)setStatus('This page has no selectable text. It may be an image-only page.');}
+function showTranscript(){const box=$('transcript');box.innerHTML='';words.forEach((w,i)=>{const s=document.createElement('span');s.className='word'+(i===wordIndex?' active':'');s.textContent=w+' ';s.id='w'+i;box.append(s)})}
+function highlight(i){const old=document.querySelector('.word.active');if(old)old.classList.remove('active');const el=$('w'+i);if(el){el.classList.add('active');el.scrollIntoView({block:'nearest',behavior:'smooth'})}wordIndex=i}
+function speakFrom(i=0){if(!words.length)return;if(!('speechSynthesis'in window)){setStatus('Your browser does not support read aloud.');return}stopSpeech();wordIndex=i;const text=words.slice(i).join(' ');utterance=new SpeechSynthesisUtterance(text);const v=voices[$('voice').value];if(v)utterance.voice=v;utterance.rate=Number($('speed').value);utterance.onboundary=e=>{if(typeof e.charIndex==='number'){const before=text.slice(0,e.charIndex).trim().split(/\s+/).filter(Boolean).length;highlight(Math.min(words.length-1,i+before))}};utterance.onend=()=>{setStatus('Page finished! Turn the page when you are ready.');};utterance.onerror=()=>setStatus('The device voice stopped. Press Play to try again.');setStatus('Reading page '+page+'…');speechSynthesis.speak(utterance)}
+$('play').onclick=()=>speakFrom(wordIndex);$('pause').onclick=()=>{if(speechSynthesis.speaking&&!speechSynthesis.paused){speechSynthesis.pause();setStatus('Paused.')}};$('replay').onclick=()=>speakFrom(0);
+$('prev').onclick=async()=>{if(page>1){page--;await renderPage();setStatus('Ready for page '+page+'.')}};$('next').onclick=async()=>{if(page<pdf.numPages){page++;await renderPage();setStatus('Ready for page '+page+'.')}};
+</script>
+</body></html>
